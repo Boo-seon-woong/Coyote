@@ -389,13 +389,18 @@ if {$cnfg(fdev) eq "u280" || $cnfg(fdev) eq "u55c"} {
 }
 
 if {$cnfg(fdev) eq "u50"} {
+    # U50: same XDMA config as U280/U55C; PCIe block/quad from the legacy U50 flow
     # Create instance: xdma_0, and set properties
     set cmd "set xdma_0 \[ create_bd_cell -type ip -vlnv $xdma_vlnv xdma_0 ]
             set_property -dict \[ list \
-              CONFIG.pcie_blk_locn {PCIE4C_X1Y0} \
-              CONFIG.select_quad {GTY_Quad_227} \
+              CONFIG.xdma_pcie_64bit_en {true} \
               CONFIG.axi_bypass_64bit_en {true} \
               CONFIG.axi_bypass_prefetchable {true} \
+              CONFIG.axilite_master_en {true} \
+              CONFIG.pf0_msix_cap_table_bir {BAR_3:2} \
+              CONFIG.pf0_msix_cap_pba_bir {BAR_3:2} \
+              CONFIG.axil_master_64bit_en {true} \
+              CONFIG.axil_master_prefetchable {true} \
               CONFIG.axi_data_width {512_bit} \
               CONFIG.axi_id_width {4} \
               CONFIG.axist_bypass_en {true} \
@@ -420,6 +425,8 @@ if {$cnfg(fdev) eq "u50"} {
               CONFIG.xdma_wnum_chnl {[expr {$cnfg(n_hchan)}]} \
               CONFIG.xdma_wnum_rids {32} \
               CONFIG.xdma_rnum_rids {32} \
+              CONFIG.pcie_blk_locn {PCIE4C_X1Y0} \
+              CONFIG.select_quad {GTY_Quad_227} \
               CONFIG.en_ext_ch_gt_drp {true} \
             ] \$xdma_0"
     eval $cmd
