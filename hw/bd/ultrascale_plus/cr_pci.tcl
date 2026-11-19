@@ -389,7 +389,8 @@ if {$cnfg(fdev) eq "u280" || $cnfg(fdev) eq "u55c"} {
 }
 
 if {$cnfg(fdev) eq "u50"} {
-    # U50: same XDMA config as U280/U55C; PCIe block/quad from the legacy U50 flow
+    # U50: same XDMA config as U280/U55C. PCIe block X1Y1 (CR X7Y3), as on U55C, so that the bottom clock-region row
+    # (HBM AXI ports 25-31 in X6Y0/X7Y0) can belong to the shell pblock; lanes stay on GTY quads 224-227
     # Create instance: xdma_0, and set properties
     set cmd "set xdma_0 \[ create_bd_cell -type ip -vlnv $xdma_vlnv xdma_0 ]
             set_property -dict \[ list \
@@ -425,7 +426,7 @@ if {$cnfg(fdev) eq "u50"} {
               CONFIG.xdma_wnum_chnl {[expr {$cnfg(n_hchan)}]} \
               CONFIG.xdma_wnum_rids {32} \
               CONFIG.xdma_rnum_rids {32} \
-              CONFIG.pcie_blk_locn {PCIE4C_X1Y0} \
+              CONFIG.pcie_blk_locn {PCIE4C_X1Y1} \
               CONFIG.select_quad {GTY_Quad_227} \
               CONFIG.en_ext_ch_gt_drp {true} \
             ] \$xdma_0"

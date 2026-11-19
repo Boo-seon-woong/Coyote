@@ -254,11 +254,11 @@ module cyt_top (
     (* io_buffer_type = "none" *) input  wire[0:0]            hbm_clk_clk_n,
     (* io_buffer_type = "none" *) input  wire[0:0]            hbm_clk_clk_p,
     {% endif %}
-    {% if cnfg.fdev == 'u55c' %}
+    {% if cnfg.fdev == 'u55c' or cnfg.fdev == 'u50' %}
     // STATIC I/O
     (* io_buffer_type = "none" *) output wire                 fpga_burn,
     {% endif %}
-    {% if cnfg.fdev == 'u280' or cnfg.fdev == 'u50' %}
+    {% if cnfg.fdev == 'u280' %}
     // STATIC I/O
     output wire                 fpga_burn,
     {% endif %}
@@ -331,7 +331,7 @@ module cyt_top (
     AXI4 #(.AXI4_DATA_BITS(128), .AXI4_ADDR_BITS(64), .AXI4_ID_BITS(2)) axi_debug_hub_st2sh ();
 {% endif %}
 
-{% if cnfg.fdev == 'u280' or cnfg.fdev == 'u50'%}
+{% if cnfg.fdev == 'u280' %}
     // The notorius D32 pin
     assign fpga_burn = 1'b0;
 
@@ -428,7 +428,7 @@ module cyt_top (
         .dclk(dclk),
     {% endif %}
 
-    {% if cnfg.fdev == 'u55c'%}
+    {% if cnfg.fdev == 'u55c' or cnfg.fdev == 'u50' %}
         .fpga_burn(fpga_burn),
     {% endif %}
 
