@@ -17,6 +17,7 @@ Built from `examples/09_perf_rdma`: `cmake ../ -DFDEV_NAME=u50 -DBUILD_STATIC=1 
 - Full design (static + 09 shell, HBM 450 MHz): all timing met (WNS 0.000, WHS 0.005), 0 routing errors, bitstream DRC 67 warnings / 0 errors.
 - Locked dcp: `inst_shell` black box (reconfigurable), both pblocks kept, PCIe `PCIE4CE4_X1Y1`, GTY X1Y0..X1Y15, ICAP `CONFIG_SITE_X0Y0`; all static cells placed, 0 routing errors.
 - Shell-flow link test (`BUILD_STATIC=0` link of the 09 shell onto this dcp): all clocks present (`pcie_ref_clk`, `xclk`, `gt0_refclk_p`, `hbm_clk_clk_p`, ...); static-internal setup slack >= 0.013 ns.
+- Second shell on this dcp (`examples/07_perf_fpga`, cmake defaults = shell flow): timing met (WNS 0.011, WHS 0.009), 0 routing errors, bitstream DRC 0 errors, bitgen writes `cyt_top.bit` and `shell_top.bin`. `pr_verify` against the 09 full design above: compatible.
 - Static uses ~80k LUT / 96 BRAM of the ~134k / 180 in its region.
 
 ## Earlier check, no floorplan (2026-11-13, `examples/07_perf_fpga`, `EN_SHELL_PBLOCK=0`, PCIe X1Y0)
