@@ -6,13 +6,13 @@ Upstream deprecated the U50 in `4b9dd2a4` (2025-02). This fork re-adds it on top
 - `cmake/FindCoyoteHW.cmake`: `FDEV_NAME=u50` (xcu50-fsvh2104-2-e, HBM 8 GB = `HBM_SIZE 33`, `MC_SIZE 28`, 32 stripe channels); added to `HBM_DEV`.
 - `hw/bd/ultrascale_plus/cr_pci.tcl`: U50 XDMA = same config as U280/U55C, `select_quad GTY_Quad_227`. PCIe block `PCIE4C_X1Y1` (CR X7Y3), as on U55C; the legacy U50 flow used `PCIE4C_X1Y0` (CR X7Y0), which sits in the row the shell needs for HBM AXI ports 25-31.
 - `hw/constraints/u50/`: static/shell/dynamic constraints. Pins taken from `hw/constraints/LEGACY/u50/` (PCIe, HBM refclk, `fpga_burn`, QSFP0). No perst pin (master has no perst port).
-- `hw/constraints/u50/fplan/u50_static_floorplan.xdc`: shell pblock, derived from the U55C floorplan (the U50 die is the bottom two SLRs of the U55C, same site coordinates). Static = CR X6..X7 / Y1..Y5; the shell gets everything else, incl. HBM, QSFP0/CMAC (X0Y7) and `fpga_burn` (J18, X4Y4).
+- `hw/constraints/u50/fplan/u50_static_floorplan.xdc`: shell pblock, derived from the U55C floorplan (the U50 die is the bottom two SLRs of the U55C, same site coordinates). Static = CR X6..X7 / Y1..Y5 and I/O bank 68 (CR X4Y4, `fpga_burn`); the shell gets everything else, incl. HBM and QSFP0/CMAC (X0Y7).
 - `hw/constraints/u50/static/impl/u50_static_pcie_pblock.xdc`: keeps the PCIe pipe logic in SLR0 (CR X6Y1..X7Y3). Without it, part of the 512-bit interface was placed in SLR1 and missed timing (-0.240 ns) on its paths to the hard block.
-- `fpga_burn` is driven by the shell, as on U55C (`hw/templates/common/cyt_top_tmplt.txt`, `shell_top_tmplt.txt`, `hw/constraints/u50/dynamic/impl/u50_shell_burn.xdc`).
-- `hw/checkpoints/static_routed_locked_u50.dcp`: locked static, see below.
+- `fpga_burn` (J18, HBM CATTRIP) is driven to 0 by the static, as on U280 (`hw/templates/common/cyt_top_tmplt.txt`, `u50_static_base.xdc`). I/O in an RP is tri-stated during reconfiguration (UG909), and the card treats a floating J18 as CATTRIP and cuts power (UG1371), so J18 must stay out of the shell. Bank 68 is kept out of the shell pblock; snapping also takes one CLB column (`SLICE_X117`, Y240-299).
+- `hw/checkpoints/static_routed_locked_u50.dcp`: removed. The one from `f0ff99a7` has J18 in the shell; a shell built from this commit would leave J18 undriven on it. To be rebuilt from this commit.
 - `hw/templates/common/*`: leftover `u50d` branches renamed to `u50`.
 
-## Locked static checkpoint (2026-11-20, Vivado 2022.1)
+## Earlier locked static (`f0ff99a7`, 2026-11-20, Vivado 2022.1; superseded, J18 in the shell)
 Built from `examples/09_perf_rdma`: `cmake ../ -DFDEV_NAME=u50 -DBUILD_STATIC=1 -DBUILD_SHELL=0 -DEN_SHELL_PBLOCK=1 && make project && make bitgen` (bitgen fails without a CMAC license; the checkpoint is written before it). sha256 `9954e5eb2f7f8748a093fc9a86694b4d07184ddabaf0a26195823b9ee250cfbc`.
 - Full design (static + 09 shell, HBM 450 MHz): all timing met (WNS 0.000, WHS 0.005), 0 routing errors, bitstream DRC 67 warnings / 0 errors.
 - Locked dcp: `inst_shell` black box (reconfigurable), both pblocks kept, PCIe `PCIE4CE4_X1Y1`, GTY X1Y0..X1Y15, ICAP `CONFIG_SITE_X0Y0`; all static cells placed, 0 routing errors.

@@ -41,7 +41,7 @@ module shell_top (
     (* io_buffer_type = "none" *) input  logic                              dclk,
 {% endif %}
 
-{% if cnfg.fdev == 'u55c' or cnfg.fdev == 'u50' %}
+{% if cnfg.fdev == 'u55c' %}
     // BURN PIN
     (* io_buffer_type = "none" *) output wire                               fpga_burn,
 {% endif %}
@@ -448,7 +448,7 @@ module shell_top (
         .axim_ctrl(axim_ctrl) 
     );
 
-{% if cnfg.fdev == 'u55c' or cnfg.fdev == 'u50' %}
+{% if cnfg.fdev == 'u55c' %}
     OBUF #(
       .DRIVE(12),   // Specify the output drive strength
       .IOSTANDARD("DEFAULT"), // Specify the output I/O standard
