@@ -9,8 +9,14 @@ Upstream deprecated the U50 in `4b9dd2a4` (2025-02). This fork re-adds it on top
 - `hw/constraints/u50/fplan/u50_static_floorplan.xdc`: shell pblock, derived from the U55C floorplan (the U50 die is the bottom two SLRs of the U55C, same site coordinates). Static = CR X6..X7 / Y1..Y5 and I/O bank 68 (CR X4Y4, `fpga_burn`); the shell gets everything else, incl. HBM and QSFP0/CMAC (X0Y7).
 - `hw/constraints/u50/static/impl/u50_static_pcie_pblock.xdc`: keeps the PCIe pipe logic in SLR0 (CR X6Y1..X7Y3). Without it, part of the 512-bit interface was placed in SLR1 and missed timing (-0.240 ns) on its paths to the hard block.
 - `fpga_burn` (J18, HBM CATTRIP) is driven to 0 by the static, as on U280 (`hw/templates/common/cyt_top_tmplt.txt`, `u50_static_base.xdc`). I/O in an RP is tri-stated during reconfiguration (UG909), and the card treats a floating J18 as CATTRIP and cuts power (UG1371), so J18 must stay out of the shell. Bank 68 is kept out of the shell pblock; snapping also takes one CLB column (`SLICE_X117`, Y240-299).
-- `hw/checkpoints/static_routed_locked_u50.dcp`: removed. The one from `f0ff99a7` has J18 in the shell; a shell built from this commit would leave J18 undriven on it. To be rebuilt from this commit.
+- `hw/checkpoints/static_routed_locked_u50.dcp`: rebuilt from `1416711a` (below). The one from `f0ff99a7` had J18 in the shell and is superseded; shells built for it do not fit this one.
 - `hw/templates/common/*`: leftover `u50d` branches renamed to `u50`.
+
+## Locked static (`1416711a`, 2026-11-20, Vivado 2022.1, built on sven)
+Built from `examples/09_perf_rdma`: `cmake ../ -DFDEV_NAME=u50 -DBUILD_STATIC=1 -DBUILD_SHELL=0 -DEN_SHELL_PBLOCK=1 && make project && make bitgen` (CMAC license present, bitgen ran). 76,016,626 B, sha256 `ad07cd68ad4317348422fc5cfab4c5ea85ccd3acdb9533478ac1b0bfaa88dd5e`.
+- Full design (static + 09 shell, HBM 450 MHz): all timing met (WNS 0.013, WHS 0.009), 0 routing errors, bitstream DRC 67 warnings / 0 errors. After link the only critical warning is Opt 31-430, as before.
+- Locked dcp: `inst_shell` black box (reconfigurable); `fpga_burn` is a static OBUF at `IOB_X0Y219` (J18, bank 68) driven by GND; bank 68 and the X4Y4 I/O and clocking sites are outside the shell pblock; PCIe `PCIE4CE4_X1Y1`, ICAP `CONFIG_SITE_X0Y0`, GTY X1Y0..X1Y15; 0 unplaced static cells; `report_drc` 0 errors (PPURQ-1 CATTRIP 0).
+- Not yet run on this dcp: shell-flow builds (07, 09) and `pr_verify`.
 
 ## Earlier locked static (`f0ff99a7`, 2026-11-20, Vivado 2022.1; superseded, J18 in the shell)
 Built from `examples/09_perf_rdma`: `cmake ../ -DFDEV_NAME=u50 -DBUILD_STATIC=1 -DBUILD_SHELL=0 -DEN_SHELL_PBLOCK=1 && make project && make bitgen` (bitgen fails without a CMAC license; the checkpoint is written before it). sha256 `9954e5eb2f7f8748a093fc9a86694b4d07184ddabaf0a26195823b9ee250cfbc`.
